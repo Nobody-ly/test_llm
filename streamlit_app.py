@@ -7,7 +7,8 @@ from langchain_core.runnables import RunnableBranch, RunnablePassthrough
 # sys.path.append("notebook/C3 搭建知识库") # 将父目录放入系统路径中
 from langchain_embedding import GuijiAIEmbeddings
 from langchain_LLM import siliconflowLLM
-from langchain_chroma import Chroma
+# from langchain_chroma import Chroma
+from langchain_community.vectorstores import Chroma
 
 API_KEY = "sk-foelcfvxqptsxbpjqjrjdhnymdiagvxodgsqyemusvstjlma"
 
