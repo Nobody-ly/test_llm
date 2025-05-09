@@ -117,14 +117,14 @@ class siliconflowLLM(BaseChatModel):
             run_manager: 一个为LLM提供回调的运行管理器
         """
         messages = [_convert_message_to_dict(message) for message in messages]
-        response = OpenAI().chat.completions.create(
+        response = OpenAI(api_key=self.api_key, base_url="https://api.siliconflow.cn/v1").chat.completions.create(
             model=self.model_name,
             stream=True, # 将stream 设置为 True 返回的是迭代器，可以通过for循环取值
             temperature=self.temperature,
             max_tokens=self.max_tokens,
             timeout=self.timeout,
             stop=stop,
-            messages=messages
+            messages=messages,
         )
         start_time = time.time()
         # 使用for循环存取结果
@@ -137,17 +137,22 @@ class siliconflowLLM(BaseChatModel):
                         "total_tokens": res.usage.total_tokens,
                     }
                 )
-            # 封装每次返回的chunk
-            chunk = ChatGenerationChunk(
-                message=AIMessageChunk(content=res.choices[0].delta.content)
-            )
+            chunk = None
+            content = getattr(res.choices[0].delta, 'content', None)
+            if content is not None:
+                # 封装每次返回的chunk
+                chunk = ChatGenerationChunk(
+                    # message=AIMessageChunk(content=res.choices[0].delta.content)
+                    message=AIMessageChunk(content=content)
+                )
 
-            if run_manager:
-                # This is optional in newer versions of LangChain
-                # The on_llm_new_token will be called automatically
-                run_manager.on_llm_new_token(res.choices[0].delta.content, chunk=chunk)
-            # 使用yield返回 结果是一个生成器 同样可以使用for循环调用
-            yield chunk
+                if run_manager:
+                    # This is optional in newer versions of LangChain
+                    # The on_llm_new_token will be called automatically
+                    run_manager.on_llm_new_token(res.choices[0].delta.content, chunk=chunk)
+            if chunk is not None:
+                # 使用yield返回 结果是一个生成器 同样可以使用for循环调用
+                yield chunk
         time_in_sec = time.time() - start_time
         # Let's add some other information (e.g., response metadata)
         # 最终返回运行时间

@@ -118,6 +118,14 @@ def main():
             output = st.write_stream(answer)
         # 将输出存入st.session_state.messages
         st.session_state.messages.append(("ai", output))
-        
+
 if __name__ == "__main__":
     main()
+    # prompt = input("请输入用户输入：")
+    # answer = gen_response(
+    #     chain=get_qa_history_chain(),
+    #     input=prompt,
+    #     chat_history=[]
+    # )
+    # for a in answer:
+    #     print(a)
